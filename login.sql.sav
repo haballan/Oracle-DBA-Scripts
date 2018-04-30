@@ -1,0 +1,109 @@
+PROMPT <<SQL*Plus with DBA Bundle flavour>>
+PROMPT
+set sqlprompt "_date' '_user'@'_connect_identifier> "
+set linesize 170
+set pages 1000
+set long 32000
+col name 	for a60
+col OWNER 	for a25
+col OBJECT_NAME for a40
+col OSPID 	for a10
+col PROGRAM 	for a40
+col TRACEID 	for a25
+col TRACEFILE 	for a65
+col inst_name 	for a20
+col host_name 	for a30
+col member 	for a70
+col file_name 	for a70
+col OS_USERNAME for a20
+col username 	for a20
+col userhost 	for a20
+col TERMINAL 	for a15
+col ID 		for 99
+col TIMESTAMP 	for a30
+col ACTION_NAME for a10
+col ACCOUNT_STATUS 	for a16
+col tablespace_name 	for a40
+-- Used by Trusted Oracle
+COLUMN ROWLABEL FORMAT A15
+-- Used for the SHOW ERRORS command
+COLUMN LINE/COL FORMAT A8
+COLUMN ERROR    FORMAT A65  WORD_WRAPPED
+-- Used for the SHOW SGA command
+COLUMN name_col_plus_show_sga FORMAT a24
+-- Defaults for SHOW PARAMETERS
+COLUMN name_col_plus_show_param  FORMAT a36 HEADING NAME
+COLUMN value_col_plus_show_param FORMAT a99 HEADING VALUE
+-- Defaults for SET AUTOTRACE EXPLAIN report
+COLUMN id_plus_exp FORMAT 990 HEADING i
+COLUMN parent_id_plus_exp FORMAT 990 HEADING p
+COLUMN plan_plus_exp FORMAT a60
+COLUMN object_node_plus_exp FORMAT a8
+COLUMN other_tag_plus_exp FORMAT a29
+COLUMN other_plus_exp FORMAT a44
+set pages 0 feedback off lines 25
+alter session set nls_date_format = 'DD-Mon-YYYY HH24:MI:SS';
+EXEC DBMS_SESSION.set_identifier('LOCAL_SESSION_POWERDED_BY_DBA_BUNDLE');
+col INS_NAME 		for a9
+col STATUS 		for a9
+col DB_OPEN_MODE 	for a12
+col "DB_STATUS|OPEN_MODE" for a27
+col "LOG_MODE|FORCE" 	for a15
+col FLASHBACK		for a9
+col BLOCKED 		for a7
+col STARTUP_TIME 	for a18
+PROMPT My Session Details:
+PROMPT -------------------
+
+select 'My SID:     '||s.sid, 'My Serial#: '||s.serial#, 'My OSPID:   '||p.spid
+from v$session s, v$process p
+where s.sid = (select sid from v$mystat where rownum = 1) and s.paddr=p.addr;
+set pages 100 lines 170
+select s.inst_id ID,s.instance_name INS_NAME,d.NAME DB_NAME,s.STATUS INS_STATUS,s.DATABASE_STATUS||'|'||d.OPEN_MODE "DB_STATUS|OPEN_MODE",d.DATABASE_ROLE DB_ROLE,d.LOG_MODE||'|'||d.FORCE_LOGGING "LOG_MODE|FORCE",d.FLASHBACK_ON FLASHBACK,s.LOGINS,s.BLOCKED,to_char(s.STARTUP_TIME,'DD-MON-YY HH24:MI:SS') STARTUP_TIME
+from gv$instance s, v$database d order by 1;
+/*
+set serveroutput on
+declare
+  ins_bundle            varchar2(10);
+  insstatus_bundle      varchar2(20);
+  dbstatus_bundle       varchar2(20);
+  logins_bundle         varchar2(20);
+  blocked_bundle        varchar2(20);
+  startupt_bundle       varchar2(40);
+  db_bundle             varchar2(20);
+  logmode_bundle        varchar2(20);
+  forcelog_bundle       varchar2(20);
+  flashback_bundle      varchar2(20);
+  openmode_bundle       varchar2(30);
+  dbrole_bundle         varchar2(20);
+  sid_bundle            number;
+  serial_bundle         number;
+  spid_bundle           number;
+begin
+  select s.sid, s.serial#, p.spid into sid_bundle, serial_bundle, spid_bundle from v$session s, v$process p
+  where s.sid = (select sid from v$mystat where rownum = 1) and s.paddr=p.addr;
+  select instance_name,STATUS,DATABASE_STATUS,LOGINS,BLOCKED,to_char(STARTUP_TIME,'DD-MON-YY HH24:MI:SS')
+    into ins_bundle,insstatus_bundle,dbstatus_bundle,logins_bundle,blocked_bundle,startupt_bundle from gv$instance;
+  select name,LOG_MODE,FORCE_LOGGING,flashback_on,OPEN_MODE,DATABASE_ROLE
+    into db_bundle,logmode_bundle,forcelog_bundle,flashback_bundle,openmode_bundle,dbrole_bundle from v$database;
+  dbms_output.put_line('------------------ ------------------');
+  dbms_output.put_line('INS Name|Status:   ' || ins_bundle || ' | ' || insstatus_bundle);
+  dbms_output.put_line('DB Name|Status:    ' || db_bundle  || ' | ' || dbstatus_bundle);
+  dbms_output.put_line('DB Mode:           ' || openmode_bundle);
+  dbms_output.put_line('DB Role:           ' || dbrole_bundle);
+  dbms_output.put_line('Logins:            ' || logins_bundle);
+  dbms_output.put_line('Services Blocked:  ' || blocked_bundle);
+  dbms_output.put_line('ARCHIVELOG Mode:   ' || logmode_bundle);
+  dbms_output.put_line('FORCE LOGGING:     ' || forcelog_bundle);
+  dbms_output.put_line('FLASHBACK Mode:    ' || flashback_bundle);
+  dbms_output.put_line('Startup Time:      ' || startupt_bundle);
+  dbms_output.put_line('------------------ ------------------');
+  dbms_output.put_line('My SID:            ' || sid_bundle);
+  dbms_output.put_line('My Serial#:        ' || serial_bundle);
+  dbms_output.put_line('My OSPID:          ' || spid_bundle);
+  dbms_output.put_line('------------------ ------------------');
+end;
+ /
+*/
+set pages 1000 feedback on
+prompt
